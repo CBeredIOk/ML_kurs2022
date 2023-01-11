@@ -22,8 +22,8 @@ def change_time(data_time):
     data_time['workday'] = data_time['day'].apply(lambda x: 0 if x == 5 or x == 6 else 1)
 
     def peak_time(x):
-        return 0 if 0 <= x < 7 else (
-            1 if 7 <= x < 10 else (2 if 10 <= x < 17 else (3 if 17 <= x < 20 else (4 if 20 <= x < 23 else x))))
+        return 0 if 0 <= x < 5 else (
+            1 if 5 <= x <= 10 else (2 if 10 < x <= 18 else (3 if 18 < x <= 23 else x)))
 
     data_time['peak'] = data_time['hour'].apply(peak_time)
 
@@ -34,22 +34,23 @@ def change_time(data_time):
 
 data.dropna(inplace=True)
 
-print(Fore.MAGENTA)
-
 x_reg_train, x_reg_test, y_reg_train, y_reg_test = train_test_split(data.drop(columns=['time_to_under']),
                                                                     data[['time_to_under']], test_size=0.3)
 
 x_reg_train = change_time(x_reg_train)
 x_reg_test = change_time(x_reg_test)
 
-print(Fore.BLUE + f'{x_reg_train.sample(15)}')
+print(Fore.MAGENTA + f'{x_reg_train.sample(15)}')
+print(Fore.BLUE + f'{x_reg_train["hour"].value_counts()}')
 
-model_reg = CatBoostRegressor(iterations=1000)
+print(Fore.MAGENTA)
+
+model_reg = CatBoostRegressor(iterations=500)
 model_reg.fit(x_reg_train, y_reg_train,
               cat_features=['ticket_type_nm', 'entrance_nm', 'station_nm', 'line_nm'])
 forecast_reg = model_reg.predict(x_reg_test)
 
-print(Fore.MAGENTA)
+print(Fore.BLUE)
 
 x_class_train = data.drop(columns=['label'])[:10000]
 y_class_train = data[['label']][:10000]
@@ -65,7 +66,7 @@ y_class_test = test_class[['label']][-3000:]
 x_class_train = change_time(x_class_train)
 x_class_test = change_time(x_class_test)
 
-model_class = CatBoostClassifier(iterations=10, depth=3)
+model_class = CatBoostClassifier(iterations=50, depth=6)
 model_class.fit(x_class_train, y_class_train,
                 cat_features=['ticket_type_nm', 'entrance_nm', 'station_nm', 'line_nm'])
 forecast_class = model_class.predict(x_class_test)
@@ -76,6 +77,6 @@ def result(test_class, forecast_class, test_reg, forecast_reg):
     return value
 
 
-print(Fore.BLUE + f'R2 = {r2_score(y_reg_test, forecast_reg)}')
-print(Fore.BLUE + f'Recall = {recall_score(y_class_test, forecast_class, average="micro")}')
-print(Fore.BLUE + f'Result = {result(y_class_test, forecast_class, y_reg_test, forecast_reg)}')
+print(Fore.MAGENTA + f'R2 = {r2_score(y_reg_test, forecast_reg)}')
+print(Fore.MAGENTA + f'Recall = {recall_score(y_class_test, forecast_class, average="micro")}')
+print(Fore.MAGENTA + f'Result = {result(y_class_test, forecast_class, y_reg_test, forecast_reg)}')
