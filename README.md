@@ -12,3 +12,9 @@ NLP
 CV
 - https://www.deeplearningbook.org/?fbclid=IwAR0Ijy-Q6pieqyV4a7lUnoLMPLmM-MAdJuPdlZ6L1WiXzpuVS9G_KQ2NpPk
 - https://www.fast.ai
+
+
+
+R2 = 0.5527671104717613
+Recall = 0.013
+Result = 0.28288355523588066
